@@ -1,10 +1,7 @@
 # delete-old-git-branches
 
 
-This is an automated bash script to delete git branches older than some specific time period.
-
-
-The default set time is 4 months, but you can pass the period in months as a first parameter while running the shell script
+This is an automated bash script to delete git branches older than some specific time period. The default set time is 4 months, but you can pass the period in months as a first parameter while running the shell script
 
 
 # Usage
