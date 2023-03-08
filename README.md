@@ -2,7 +2,6 @@
 
 <br>
 
-
 ![GitHub issues](https://img.shields.io/github/issues/LinuxEuphony/delete-old-git-branches?&labelColor=black&color=eb3b5a&label=Issues&logo=issues&logoColor=black&style=for-the-badge)
 ![GitHub Contributions](https://img.shields.io/github/contributors/LinuxEuphony/delete-old-git-branches?&labelColor=black&color=8854d0&style=for-the-badge)
 ![repo size](https://img.shields.io/github/repo-size/LinuxEuphony/delete-old-git-branches?label=Repo%20Size&style=for-the-badge&labelColor=black&color=20bf6b)
@@ -10,6 +9,7 @@
 ![GitHub stars](https://img.shields.io/github/stars/LinuxEuphony/delete-old-git-branches?&labelColor=black&color=f7b731&style=for-the-badge)
 ![GitHub LastCommit](https://img.shields.io/github/last-commit/LinuxEuphony/delete-old-git-branches?logo=github&labelColor=black&color=d1d8e0&style=for-the-badge)
 
+<br>
 
 This is an automated bash script to delete git branches older than some specific time period. The default set time is 4 months, but you can pass the period in months as a first parameter while running the shell script
 
