@@ -37,7 +37,8 @@ To download and use this script:
   4. Type **`./delete-old-git-branches.sh`** to run the script.
 
 <br>
-  ## Run options
+ 
+ ## Run options
   
   1. Below will run with the default 4 months period.
   
