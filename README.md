@@ -36,6 +36,25 @@ To download and use this script:
   3. Type **`chmod +x delete-old-git-branches.sh`** and click on `enter key` to make the script executable.
   4. Type **`./delete-old-git-branches.sh`** to run the script.
 
+<br>
+  ## Run options
+  
+  1. Below will run with the default 4 months period.
+  
+    ./delete-old-git-branches.sh
+  
+  2. Below will run with preferred timeline set.
+  
+    ./delete-old-git-branches.sh 3
+  
+  3. Below will run with default 4 months period and force delete unmarged branches enabled.
+  
+    ./delete-old-git-branches.sh -f
+    
+  4. Below will run with the preferred time set and force delete unmarged branches enabled.
+  
+    ./delete-old-git-branches.sh -f 3
+  
 </br></br>
 
 
