@@ -1,0 +1,314 @@
+#!/bin/bash
+
+#  This is an automated bash script to delete git branches older than some specific time period.
+#  The default set time is 4 months, but you can pass the period in months as a first parameter while running the shell script
+
+declare -l -r scriptName="delete-old-git-branches" # Set to lowers and read-only
+declare -l -r logFileName="$scriptName-logs.txt" # Set to lowers and read-only
+declare -i numberOfMonths # Declare the default period in months
+declare blackListedBranches # Blacklisted branches
+declare forceDeleteBranch=false # Force delete flag default value
+declare -r numberExpression='^[0-9]+$' # Number expression
+declare -l -r networktestURL="www.google.com" # Network test URL
+declare -l -r gitRemoteURL="YOUR_REMOTE_OR_LOCAL_GIT_URL" # Remote git URL example 192.168.178.20
+clear=clear # Command to clear terminal
+ECHO='echo ' # Custom echo
+${clear} # Clear terminal
+
+# Set branches to exclude in deletion
+blackListedBranches="main,master,development"
+
+
+# Function to initiate logfile
+function initLogFile(){
+    cd ~ || exit # Change directory to users' home directory
+    # Delete log file if/not it exists to prevent appending to previous logs
+    rm -f $logFileName
+    touch $logFileName # Creating log file
+    currentDate="Date : `date`\n\n" # Get current date
+    # Add script actions to script actions array
+    scriptActions=( "${scriptActions[@]}" "Created log file" )
+    # Log date without displaying on terminal
+    printf $currentDate &>> $logFileName
+}
+
+# Function to hold terminal with simple terminal animation
+function customAnimatedSleep(){
+
+  local -r initialTime=`date +%s` # Get start time
+  local -r characters=" //--\\|| "
+  while :
+  do
+      local currentTime=`date +%s`
+      for (( i=0; i<${#characters}; i++ ))
+      do
+          sleep .1
+          echo -en "  ${characters:$i:1}" "\r"
+      done
+      difference=$((currentTime-initialTime))
+      if [[ "$difference" -eq $1 ]]
+      then
+          break
+      fi
+  done
+}
+
+# Function to create a custom coloured print
+function customEcho(){
+    RED="\033[0;31m"    # 31 - red    : "\e[1;31m$1\e[0m"
+    GREEN="\033[0;32m"  # 32 - green  : "\e[1;32m$1\e[0m"
+    YELLOW="\033[1;33m" # 33 - yellow : "\e[1;33m$1\e[0m"
+    BLUE="\033[1;34m"   # 34 - blue   : "\e[1;34m$1\e[0m"
+    PURPLE="\033[1;35m" # 35 - purple : "\e[1;35m$1\e[0m"
+    NC="\033[0m"        # No Color    : "\e[0m$1\e[0m"
+    # Display coloured text setting its background color to black
+    printf "\e[48;5;0m${!1}\n ${2} ${NC}\n" || exit
+}
+
+# Function to display connection established message
+function connectionEstablishedMessage(){
+  # Check first parameter
+  if [[ "$1" = "--network" ]]; 
+  then
+    customEcho "GREEN" "Internet connection established.\n" |& tee -a $logFileName
+  elif [[ "$1" = "--git-remote" ]]; 
+  then
+    customEcho "GREEN" "Remote url connection established.\n" |& tee -a $logFileName
+  fi
+    customAnimatedSleep 2 # Hold for user to read
+}
+
+# Function to display connection failed message
+function connectionFailedMessage(){
+
+  # Check first parameter
+  if [[ "$1" = "--network" ]]; 
+  then
+    customEcho "RED" "Internet connection failed!!!" |& tee -a $logFileName
+  elif [[ "$1" = "--git-remote" ]]; 
+  then
+    customEcho "RED" "Cannot connect to git remote url : [$gitRemoteURL] !!!" |& tee -a $logFileName
+  fi
+
+  customAnimatedSleep 2 # Hold 
+}
+
+# Function to check for internet connection and validate security on connection
+function isConnected(){
+
+  ${clear} # Clear terminal
+
+  # Creating integer variable
+  local -i loopcount=0 # Declare loop count variable
+  local -i -r retryCount=4 # Declare and set number of retries to read-only
+  local -i -r maxRetry=$[retryCount + 1] # Declare and set max retry to read-only
+  local -i -r countDownTime=30 # Declare and set retry to read-only
+
+  while :
+  do # Starting infinite loop
+      
+      ${clear} # Clear terminal
+      
+      local url;
+      local isInternetConnectionCheck=false
+
+      # Check first parameter
+      if [[ "$1" = "--network" ]]; 
+      then
+        url="$networktestURL"
+        isInternetConnectionCheck=true
+      elif [[ "$1" = "--git-remote" ]]; 
+      then
+        url="$gitRemoteURL"
+        isInternetConnectionCheck=false
+      fi
+
+      customEcho "YELLOW" "\nChecking for internet connection ($1) !!" |& tee -a $logFileName
+      if `nc -zw1 $url 443` && echo |openssl s_client -connect $url:443 2>&1 |awk '
+        handshake && $1 == "Verification" { if ($2=="OK") exit; exit 1 }
+        $1 $2 == "SSLhandshake" { handshake = 1 }'
+      then # Internet connection established
+        connectionEstablishedMessage $1 # Display connection established message
+        return $(true) # Exit loop returning true
+      else
+
+        connectionFailedMessage $1 # Display connection failed message
+
+        # Check first parameter
+        if [[ "$isInternetConnectionCheck" = true ]]; 
+        then
+
+          # Start count to re-try connection
+          if [ "$loopcount" == 0 ];
+          then
+              customEcho "YELLOW" "Attemting re-connection...\n Max number of retries : \e[0m$maxRetry\e[0m\n" |& tee -a $logFileName
+          fi
+          
+          # Check for max number of retries
+          if [ "$loopcount" -gt "$retryCount" ];
+          then
+              customEcho "YELLOW" "Number of retries: $loopcount" |& tee -a $logFileName # Display number of retries
+              return $(false) # Exit loop returning false
+          else
+              loopcount=$[loopcount + 1] # Increment loop counter variable
+
+              # Run countdown
+              date1=$((`date +%s` + $countDownTime))
+              while [ "$date1" -ge "$(date +%s)" ];
+              do
+                echo -ne " \e[1;32mRetrying connection after :\e[0m \e[1;33m$(date -u --date @$(($date1 - `date +%s`)) +%H:%M:%S)\r\e[0m" |& tee -a $logFileName
+                sleep 0.1
+              done
+          fi 
+        elif [[ "$isInternetConnectionCheck" = false ]]; 
+        then
+          connectionFailedMessage "--git-remote" # Display internet connection failed message
+          return $(false) # Exit loop returning true
+        fi  
+      fi  
+      
+
+      customAnimatedSleep 2 # Hold loop
+  done
+}
+
+
+
+: ' 
+  Start of script
+'
+initLogFile # Create log file
+
+# Check if first parameter is not empty
+if [ ! -z "$1" ];
+then
+  # Check for set force delete branch command
+  if [[ "$1" = "-f" ]]; 
+  then
+    forceDeleteBranch=true # Set force delete to true
+  elif [[ $1 =~ $numberExpression ]]; # Check first parameter is a number
+  then # First choice is a number
+    numberOfMonths=$1 # Set passed period
+  fi
+fi
+
+# Check if second parameter is not empty
+if [ ! -z "$2" ];
+then
+  # Check if second parameter is a number expressions
+  if [[ $2 =~ $numberExpression ]];  
+  then
+    numberOfMonths=$2 # Set passed period
+  else
+    # Second parameter should only be a digit assuming force flag was 
+    # passed as first and not viceversa
+    ${clear} # Clear terminal
+    customEcho "RED" "\nSecond parameter should be a digit(time in months)\n assuming -f(force delete) was passed as first parameter!\n" |& tee -a $logFileName
+    exit # Exit script
+  fi
+fi
+
+# Check if both first and second parameters are empty
+if [[ -z $1 && -z $2  ]]
+then # Both first and second parameters not set
+    customEcho "GREEN" "\nPeriod not set. Assuming delete period to the default $numberOfMonths months period!\n" |& tee -a $logFileName
+    customAnimatedSleep 4 # Hold   
+    numberOfMonths=4 # Set default period
+fi
+
+# Check for internet connection
+if isConnected "--network"
+then
+
+  # Check if endpoint exists or is up
+  if isConnected "--git-remote"
+  then
+
+    ${clear} # Clear terminal
+    customEcho "RED" "\nDeleting branches older than $numberOfMonths months!\n" |& tee -a $logFileName
+    customAnimatedSleep 2 # Hold 
+
+    # Check for trailing commas to remove them
+    if [[ "$blackListedBranches" == *, ]]; 
+    then
+      declare trimmedValue
+      trimmedValue=$(sed 's/.\{1\}$//' <<< "$blackListedBranches") # Remove last character
+      blackListedBranches="$trimmedValue" # Re-assign value
+    fi
+
+    # Start loop to search for commas
+    while true
+    do
+      # Switch case to check for commas in case of comma separated list to 
+      # create a list for GREP
+      case "$blackListedBranches" in 
+        *,*)
+          declare branchSeparator="$\|" # Declare separator syntax
+          blackListedBranches=${blackListedBranches/,/$branchSeparator} # Replace comma with GREP separator syntax
+          ;;
+        *) # Default
+          break # Break loop
+        ;;
+      esac
+    done
+
+    blackListedBranches="${blackListedBranches}$" # Append dollar sign at the end of GREP list
+
+    customEcho "YELLOW" "\nThe branches [ $blackListedBranches ] will not be deleted!\n" |& tee -a $logFileName
+    customAnimatedSleep 4 # Hold 
+
+    
+    # Fetch branches
+    customEcho "YELLOW" "\nFetching branches!\n"
+    customAnimatedSleep 2 # Hold 
+    git fetch
+    git fetch -a
+
+    : '
+      Initiate loop scanning for branches older than passed time or set default while excluding the below branches
+      main, master
+    '
+    for target_branch in $(git branch -a | sed 's/^\s*//' | sed 's/^remotes\///' | grep -v $blackListedBranches); 
+    do
+      # Check period
+      if ! ( [[ -f "$target_branch" ]] || [[ -d "$target_branch" ]] ) && [[ "$(git log $target_branch --since "$numberOfMonths month ago" | wc -l)" -eq 0 ]];
+      then
+        if [[ "$DRY_RUN" = "false" ]]; 
+        then
+          ECHO="" # Empty echo
+        fi
+
+        local_target_branch_name=$(echo "$target_branch" | sed 's/remotes\/origin\///') # Get target branch in iteration
+        local_target_branch_name=${local_target_branch_name/origin\//} # Replace string "origin/" with empty(string)
+       
+        customEcho "YELLOW" "Deleting Local Branch : $local_target_branch_name\n" |& tee -a $logFileName # Print message
+        customAnimatedSleep 1 # Hold
+        
+        # Check for force delete value
+        if [[ "$forceDeleteBranch" = "false" ]]
+        then
+          git branch -d "${local_target_branch_name}" # Delete local branch
+        elif [[ "$forceDeleteBranch" = "true" ]]
+        then
+          git branch -D "${local_target_branch_name}" # Force elete local branch
+        fi
+
+        customEcho "GREEN" "\n---------------------------------\n" |& tee -a $logFileName
+
+        customEcho "YELLOW" "Deleting Remote Branch : $local_target_branch_name\n" |& tee -a $logFileName # Print message
+        customAnimatedSleep 2 # Hold 
+        git push origin --delete "${local_target_branch_name}" # Delete remote branch
+
+        customEcho "GREEN" "\n---------------------------------\n" |& tee -a $logFileName
+      fi
+    done
+  else
+    customEcho "RED" "\nHalting script execution!\n" |& tee -a $logFileName
+    customAnimatedSleep 2 # Hold 
+    exit # Exit script
+  fi
+else 
+  customEcho "RED" "\nCannot establish internet connection!\n" |& tee -a $logFileName
+  customAnimatedSleep 2 # Hold 
+  exit # Exit script
+fi
