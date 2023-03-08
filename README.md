@@ -31,9 +31,10 @@ To download and use this script:
   
   # How to run the file
 
-  1. Open the terminal inside the, or navigate through terminal into the folder named **`delete-old-git-branches-main`**
-  2. Type **`chmod +x delete-old-git-branches.sh`** and click on `enter key` to make the script executable.
-  3. Type **`./delete-old-git-branches.sh`** to run the script.
+  1. Navigate to and edit the file named **`delete-old-git-branches.sh`**. Replace the value **`YOUR_REMOTE_OR_LOCAL_GIT_URL`** on line **`13`** with your remote/local git url.
+  2. Open the terminal inside the, or navigate through terminal into the folder named **`delete-old-git-branches-main`**
+  3. Type **`chmod +x delete-old-git-branches.sh`** and click on `enter key` to make the script executable.
+  4. Type **`./delete-old-git-branches.sh`** to run the script.
 
 </br></br>
 
