@@ -9,9 +9,10 @@ This is an automated bash script to delete git branches older than some specific
 # Usage
 
 ## GIT Clone
-    1. Navigate to your preferred directory
-    2. Run terminal
-    3. Type `git clone https://github.com/LinuxEuphony/delete-old-git-branches`
+  1. Navigate to your preferred directory
+  2. Run terminal
+  3. Type **git clone https://github.com/LinuxEuphony/delete-old-git-branches** to clone repository
+  4. Navigate to the folder named **delete-old-git-branches**
 
 
 ## Download
