@@ -9,6 +9,7 @@ This is an automated bash script to delete git branches older than some specific
 
 # How to download the script
 
+
 ## GIT Clone Option
   1. Navigate to your preferred directory
   2. Run terminal
