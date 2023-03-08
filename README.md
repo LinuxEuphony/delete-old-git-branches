@@ -3,8 +3,11 @@
 
 This is an automated bash script to delete git branches older than some specific time period. The default set time is 4 months, but you can pass the period in months as a first parameter while running the shell script
 
+----
 
-# Usage
+<br>
+
+# How to download the script
 
 ## GIT Clone Option
   1. Navigate to your preferred directory
@@ -13,13 +16,17 @@ This is an automated bash script to delete git branches older than some specific
   4. Navigate to the folder named **delete-old-git-branches**
 
 
-## Download Option
+## Github Download Option
 To download and use this script:
   1. Click on *`code`* on this page.
   2. Click on *`Download Zip`*.
   3. A files named *`delete-old-git-branches-main.zip`* will be downloaded. Extract the zip file in your computer. You will see a folder labelled *`delete-old-git-branches-main`*. 
   4. Navigate to that folder.
   
+  
+  ----
+  
+  <br>
   
   # How to run the file
 
